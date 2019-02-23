@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t nymian/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run nymian/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t nymian/multi-client ./client
+  - docker build -t nymian/multi-nginx ./nginx
+  - docker build -t nymian/multi-server ./server
+  - docker build -t nymian/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push nymian/multi-client
+  - docker push nymian/multi-nginx
+  - docker push nymian/multi-server
+  - docker push nymian/multi-worker
+
+  
